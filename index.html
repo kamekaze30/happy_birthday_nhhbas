@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glow 2026 | HBD ✨</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:italic,wght@600&family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --cream: #FDFBF7; --sage: #8E9775; --clay: #B38B6D; --earth: #4A443F; --sand: #EAE0D5; }
+        body { font-family: 'Quicksand', sans-serif; background-color: var(--cream); color: var(--earth); overflow: hidden; margin: 0; }
+
+        /* INTRO ANIMATION: Preloader */
+        #loader {
+            position: fixed; inset: 0; background: var(--cream); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        .loader-text { letter-spacing: 0.5em; font-size: 10px; text-transform: uppercase; color: var(--clay); }
+        .bar { width: 0%; height: 2px; background: var(--clay); margin-top: 10px; transition: width 1.5s ease; }
+
+        /* OUTRO ANIMATION: Final Glow */
+        #outro-overlay {
+            position: fixed; inset: 0; background: white; z-index: 9998;
+            opacity: 0; pointer-events: none; transition: opacity 2s ease;
+        }
+
+        /* Responsive Sections */
+        section { min-height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; position: relative; opacity: 0; transform: translateY(20px); transition: all 1s ease; }
+        section.active { opacity: 1; transform: translateY(0); }
+
+        /* Slide Gallery */
+        .slide-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 1.5rem; width: 100vw; padding: 2rem; scrollbar-width: none; }
+        .slide-item { flex: 0 0 80vw; scroll-snap-align: center; background: white; padding: 1rem 1rem 3rem 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-radius: 4px; }
+
+        .btn-magic {
+            background: var(--earth); color: white; padding: 1rem 2.5rem; border-radius: 50px;
+            font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+            transition: all 0.3s; box-shadow: 0 10px 20px rgba(74, 68, 63, 0.2);
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <audio id="sfx-pop" src="click.mp3" preload="auto"></audio>
+    <audio id="sfx-magic" src="sparkle.mp3" preload="auto"></audio>
+
+    <div id="loader">
+        <p class="loader-text">Opening your 2026 Gift</p>
+        <div class="w-32 bg-gray-100"><div id="progress" class="bar"></div></div>
+    </div>
+
+    <div id="outro-overlay"></div>
+
+    <main id="main-content">
+        <section id="hero" class="active">
+            <div class="text-center">
+                <p class="text-[10px] tracking-[0.5em] opacity-50 mb-4 animate__animated animate__fadeInDown">SINCE 2026</p>
+                <h1 class="text-6xl font-bold text-earth animate__animated animate__zoomIn animate__delay-1s">Aesthetic<br><span class="text-clay italic font-serif">Glow.</span></h1>
+                <p class="mt-10 text-xs italic text-sage animate__animated animate__fadeInUp animate__delay-2s">Tap anywhere for hearts</p>
+            </div>
+        </section>
+
+        <section id="moments" class="bg-[#F4F1ED]">
+            <h2 class="text-[10px] font-bold tracking-widest uppercase mb-10">Our Collected Story</h2>
+            <div class="slide-container">
+                <div class="slide-item"><img src="photo5.jpeg" class="w-full h-80 object-cover rounded-sm"><p class="mt-4 italic font-serif text-center">Softest Light</p></div>
+                <div class="slide-item"><img src="photo4.jpeg" class="w-full h-80 object-cover rounded-sm"><p class="mt-4 italic font-serif text-center">Cat Mom 🐾</p></div>
+                <div class="slide-item"><img src="photo1.jpeg" class="w-full h-80 object-cover rounded-sm"><p class="mt-4 italic font-serif text-center">Travel 2025</p></div>
+                <div class="slide-item"><img src="photo2.jpeg" class="w-full h-80 object-cover rounded-sm"><p class="mt-4 italic font-serif text-center">Memories</p></div>
+            </div>
+        </section>
+
+        <section id="message" class="bg-sand">
+            <div class="text-center p-12 bg-white/60 backdrop-blur-lg rounded-[3rem] max-w-xs shadow-xl">
+                <span class="text-5xl mb-6 block">🧸</span>
+                <p class="font-serif italic text-2xl mb-6">"Another year of blooming beautifully."</p>
+                <p class="text-[10px] tracking-[0.3em] uppercase opacity-40">Happy Birthday</p>
+            </div>
+        </section>
+
+        <section id="finale">
+            <div class="text-center">
+                <button onclick="handleFinale()" class="btn-magic active:scale-90 mb-10">
+                    Unlock 2026 Magic ✨
+                </button>
+                <h2 class="text-2xl italic font-serif text-sage">Stay Wonderful.</h2>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Sound Players
+        const popSfx = document.getElementById('sfx-pop');
+        const magicSfx = document.getElementById('sfx-magic');
+
+        function playPop() { popSfx.currentTime = 0; popSfx.play().catch(()=>{}); }
+        function playMagic() { magicSfx.currentTime = 0; magicSfx.play().catch(()=>{}); }
+
+        // Intro Logic
+        window.addEventListener('load', () => {
+            const bar = document.getElementById('progress');
+            bar.style.width = '100%';
+            
+            setTimeout(() => {
+                document.getElementById('loader').style.transform = 'translateY(-100%)';
+                document.body.style.overflow = 'auto';
+                playMagic();
+            }, 2000);
+        });
+
+        // Intersection Observer for Section Animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.3 });
+
+        document.querySelectorAll('section').forEach(s => observer.observe(s));
+
+        // Interaction: Hearts + Pop Sound
+        document.addEventListener('click', (e) => {
+            playPop();
+            const heart = document.createElement('div');
+            heart.innerHTML = '🤎';
+            heart.className = 'fixed pointer-events-none z-[9999] animate__animated animate__fadeOutUp';
+            heart.style.left = (e.clientX - 10) + 'px';
+            heart.style.top = (e.clientY - 10) + 'px';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 800);
+        });
+
+        // Finale: Confetti + Outro Animation
+        function handleFinale() {
+            playMagic();
+            confetti({
+                particleCount: 200,
+                spread: 90,
+                origin: { y: 0.6 },
+                colors: ['#8E9775', '#B38B6D', '#FDFBF7']
+            });
+
+            // Start Outro after 3 seconds
+            setTimeout(() => {
+                document.getElementById('outro-overlay').style.opacity = '1';
+                setTimeout(() => {
+                    alert("May your year be as beautiful as you! 🎉");
+                    window.scrollTo({top: 0, behavior: 'smooth'});
+                    document.getElementById('outro-overlay').style.opacity = '0';
+                }, 2500);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
