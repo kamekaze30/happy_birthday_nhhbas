@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Glow 2026 | HBD ✨</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -11,149 +11,299 @@
     
     <style>
         :root { --cream: #FDFBF7; --sage: #8E9775; --clay: #B38B6D; --earth: #4A443F; --sand: #EAE0D5; }
-        body { font-family: 'Quicksand', sans-serif; background-color: var(--cream); color: var(--earth); overflow: hidden; margin: 0; }
-
-        /* INTRO ANIMATION: Preloader */
-        #loader {
-            position: fixed; inset: 0; background: var(--cream); z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1);
-        }
-        .loader-text { letter-spacing: 0.5em; font-size: 10px; text-transform: uppercase; color: var(--clay); }
-        .bar { width: 0%; height: 2px; background: var(--clay); margin-top: 10px; transition: width 1.5s ease; }
-
-        /* OUTRO ANIMATION: Final Glow */
-        #outro-overlay {
-            position: fixed; inset: 0; background: white; z-index: 9998;
-            opacity: 0; pointer-events: none; transition: opacity 2s ease;
+        
+        html, body { 
+            font-family: 'Quicksand', sans-serif; 
+            background-color: var(--cream); 
+            color: var(--earth); 
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
-        /* Responsive Sections */
-        section { min-height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; position: relative; opacity: 0; transform: translateY(20px); transition: all 1s ease; }
+        /* --- INFINITE REEL LOOP --- */
+        .marquee-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            position: relative;
+            padding: 20px 0;
+        }
+        .marquee-wrapper::-webkit-scrollbar { display: none; }
+
+        .marquee-content {
+            display: inline-flex;
+            gap: 20px;
+            transition: transform 0.5s ease;
+        }
+
+        .marquee-content.auto-scroll {
+            animation: scroll-loop 50s linear infinite;
+        }
+
+        /* Pause animation on touch/scroll */
+        .marquee-wrapper:active .marquee-content {
+            animation-play-state: paused;
+        }
+
+        @keyframes scroll-loop {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-5680px); }
+        }
+        
+        .slide-card {
+            width: 260px;
+            flex-shrink: 0;
+            background: white;
+            padding: 10px 10px 35px 10px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            white-space: normal;
+        }
+
+        /* --- MUSIC BUTTON --- */
+        .music-fab {
+            position: fixed; bottom: 25px; right: 25px; z-index: 9000;
+            width: 55px; height: 55px;
+            background: var(--earth); color: white;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .music-fab.playing { background: var(--sage); scale: 1.1; }
+
+        /* --- BACKGROUND VIBE --- */
+        .bg-blob {
+            position: fixed; border-radius: 50%; filter: blur(60px); 
+            z-index: -1; opacity: 0.4; pointer-events: none;
+        }
+
+        /* --- SECTIONS --- */
+        section { 
+            min-height: 100vh; width: 100%; 
+            display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; 
+            padding: 1.5rem; opacity: 0; transform: translateY(30px); 
+            transition: all 1s ease; 
+        }
         section.active { opacity: 1; transform: translateY(0); }
 
-        /* Slide Gallery */
-        .slide-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 1.5rem; width: 100vw; padding: 2rem; scrollbar-width: none; }
-        .slide-item { flex: 0 0 80vw; scroll-snap-align: center; background: white; padding: 1rem 1rem 3rem 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-radius: 4px; }
-
         .btn-magic {
-            background: var(--earth); color: white; padding: 1rem 2.5rem; border-radius: 50px;
+            background: var(--earth); color: white; 
+            padding: 1rem 2.5rem; border-radius: 50px;
             font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
-            transition: all 0.3s; box-shadow: 0 10px 20px rgba(74, 68, 63, 0.2);
+            box-shadow: 0 10px 20px rgba(74, 68, 63, 0.2);
+        }
+
+        /* --- REEL NAVIGATION BUTTONS --- */
+        .reel-nav-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 45px; height: 45px;
+            background: rgba(74, 68, 63, 0.8); color: white;
+            border: none; border-radius: 50%; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 20px; transition: all 0.3s ease; z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .reel-nav-btn:hover { background: rgba(74, 68, 63, 0.95); scale: 1.1; }
+        .reel-nav-btn:active { scale: 0.95; }
+        .reel-nav-btn.prev { left: 10px; }
+        .reel-nav-btn.next { right: 10px; }
+
+        .reel-container {
+            position: relative;
+            width: 100%;
         }
     </style>
 </head>
-<body class="overflow-x-hidden">
+<body>
 
+    <audio id="bg-music" src="music.mp3" loop></audio> 
     <audio id="sfx-pop" src="click.mp3" preload="auto"></audio>
     <audio id="sfx-magic" src="sparkle.mp3" preload="auto"></audio>
 
-    <div id="loader">
-        <p class="loader-text">Opening your 2026 Gift</p>
-        <div class="w-32 bg-gray-100"><div id="progress" class="bar"></div></div>
+    <button onclick="toggleMusic()" id="music-btn" class="music-fab">♫</button>
+
+    <div class="bg-blob w-64 h-64 bg-sand -top-10 -left-10"></div>
+    <div class="bg-blob w-80 h-80 bg-[#e8dcc8] -bottom-20 -right-20"></div>
+
+    <div id="loader" class="fixed inset-0 bg-[--cream] z-[9999] flex flex-col justify-center items-center transition-transform duration-700">
+        <p class="text-[10px] tracking-[0.5em] text-clay animate-pulse">CREATING MAGIC</p>
+        <div class="w-24 h-[1px] bg-sand mt-4 overflow-hidden"><div id="progress" class="h-full bg-earth w-0 transition-all duration-1000"></div></div>
     </div>
 
-    <div id="outro-overlay"></div>
-
-    <main id="main-content">
+    <main>
         <section id="hero" class="active">
-            <div class="text-center">
-                <p class="text-[10px] tracking-[0.5em] opacity-50 mb-4 animate__animated animate__fadeInDown">SINCE 2026</p>
-                <h1 class="text-6xl font-bold text-earth animate__animated animate__zoomIn animate__delay-1s">Aesthetic<br><span class="text-clay italic font-serif">Glow.</span></h1>
-                <p class="mt-10 text-xs italic text-sage animate__animated animate__fadeInUp animate__delay-2s">Tap anywhere for hearts</p>
+            <div class="text-center z-10">
+                <span class="text-4xl mb-6 block animate-bounce">🦢</span>
+                <p class="text-[9px] tracking-[0.4em] opacity-50 mb-2 uppercase">Volume 20.26</p>
+                <h1 class="text-6xl font-bold text-earth leading-[0.85]">Glow<br><span class="text-clay italic font-serif text-5xl">Moment.</span></h1>
             </div>
+            <div class="absolute bottom-10 opacity-30 text-[9px] tracking-[0.4em] uppercase">Scroll to Reel</div>
         </section>
 
-        <section id="moments" class="bg-[#F4F1ED]">
-            <h2 class="text-[10px] font-bold tracking-widest uppercase mb-10">Our Collected Story</h2>
-            <div class="slide-container">
-                <div class="slide-item"><img src="photo5.jpeg" class="w-full h-80 object-cover rounded-sm"><p class="mt-4 italic font-serif text-center">Softest Light</p></div>
-                <div class="slide-item"><img src="photo4.jpeg" class="w-full h-80 object-cover rounded-sm"><p class="mt-4 italic font-serif text-center">Cat Mom 🐾</p></div>
-                <div class="slide-item"><img src="photo1.jpeg" class="w-full h-80 object-cover rounded-sm"><p class="mt-4 italic font-serif text-center">Travel 2025</p></div>
-                <div class="slide-item"><img src="photo2.jpeg" class="w-full h-80 object-cover rounded-sm"><p class="mt-4 italic font-serif text-center">Memories</p></div>
+        <section id="reel-section">
+            <h2 class="text-[10px] font-bold tracking-[0.3em] uppercase mb-8 opacity-60">Visual Diary</h2>
+            
+            <div class="reel-container">
+                <button class="reel-nav-btn prev" onclick="slideReel(-1)">‹</button>
+                <div class="marquee-wrapper" id="reel">
+                <div class="marquee-content">
+                    <div class="slide-card"><img src="photo5.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Glow</p></div>
+                    <div class="slide-card"><img src="photo4.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Cat Mom 🐾</p></div>
+                    <div class="slide-card"><img src="photo1.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Travels</p></div>
+                    <div class="slide-card"><img src="photo2.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Story</p></div>
+                    <div class="slide-card"><img src="photo5.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Glow</p></div>
+                    <div class="slide-card"><img src="photo4.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Cat Mom 🐾</p></div>
+                    <div class="slide-card"><img src="photo1.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Travels</p></div>
+                    <div class="slide-card"><img src="photo2.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Story</p></div>
+                    <div class="slide-card"><img src="photo5.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Glow</p></div>
+                    <div class="slide-card"><img src="photo4.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Cat Mom 🐾</p></div>
+                    <div class="slide-card"><img src="photo1.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Travels</p></div>
+                    <div class="slide-card"><img src="photo2.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Story</p></div>
+                    <div class="slide-card"><img src="photo5.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Glow</p></div>
+                    <div class="slide-card"><img src="photo4.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Cat Mom 🐾</p></div>
+                    <div class="slide-card"><img src="photo1.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Travels</p></div>
+                    <div class="slide-card"><img src="photo2.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Story</p></div>
+                </div>
+                </div>
+                <button class="reel-nav-btn next" onclick="slideReel(1)">›</button>
             </div>
+            
+            <p class="text-[9px] mt-6 opacity-40 italic tracking-widest">Swipe or Touch to Explore</p>
         </section>
 
-        <section id="message" class="bg-sand">
-            <div class="text-center p-12 bg-white/60 backdrop-blur-lg rounded-[3rem] max-w-xs shadow-xl">
-                <span class="text-5xl mb-6 block">🧸</span>
-                <p class="font-serif italic text-2xl mb-6">"Another year of blooming beautifully."</p>
-                <p class="text-[10px] tracking-[0.3em] uppercase opacity-40">Happy Birthday</p>
+        <section>
+            <div class="w-[85%] max-w-xs p-10 bg-white/50 backdrop-blur-md rounded-[40px] border border-white/60 shadow-xl text-center transform rotate-1">
+                <p class="font-serif italic text-2xl text-earth leading-relaxed mb-6">
+                    "May your year be as bright as your smile."
+                </p>
+                <div class="w-8 h-[1px] bg-clay mx-auto"></div>
             </div>
         </section>
 
         <section id="finale">
             <div class="text-center">
-                <button onclick="handleFinale()" class="btn-magic active:scale-90 mb-10">
-                    Unlock 2026 Magic ✨
+                <button onclick="handleFinale()" class="btn-magic mb-8 active:scale-95 transition-all">
+                    Unlock 2026 ✨
                 </button>
-                <h2 class="text-2xl italic font-serif text-sage">Stay Wonderful.</h2>
+                
+                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="block mx-auto text-[10px] uppercase tracking-[0.3em] text-sage">
+                    ↑ Restart
+                </button>
             </div>
         </section>
     </main>
 
     <script>
-        // Sound Players
+        // --- AUDIO ENGINE ---
+        const bgMusic = document.getElementById('bg-music');
         const popSfx = document.getElementById('sfx-pop');
         const magicSfx = document.getElementById('sfx-magic');
+        const musicBtn = document.getElementById('music-btn');
+        let musicPlaying = false;
 
-        function playPop() { popSfx.currentTime = 0; popSfx.play().catch(()=>{}); }
-        function playMagic() { magicSfx.currentTime = 0; magicSfx.play().catch(()=>{}); }
+        function toggleMusic() {
+            if (musicPlaying) {
+                bgMusic.pause();
+                musicBtn.innerHTML = '♫';
+                musicBtn.classList.remove('playing');
+            } else {
+                bgMusic.play().catch(() => alert("Tap anywhere first to enable sound!"));
+                musicBtn.innerHTML = '❚❚';
+                musicBtn.classList.add('playing');
+            }
+            musicPlaying = !musicPlaying;
+        }
 
-        // Intro Logic
-        window.addEventListener('load', () => {
-            const bar = document.getElementById('progress');
-            bar.style.width = '100%';
-            
-            setTimeout(() => {
-                document.getElementById('loader').style.transform = 'translateY(-100%)';
-                document.body.style.overflow = 'auto';
-                playMagic();
-            }, 2000);
-        });
-
-        // Intersection Observer for Section Animation
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                }
-            });
-        }, { threshold: 0.3 });
-
-        document.querySelectorAll('section').forEach(s => observer.observe(s));
-
-        // Interaction: Hearts + Pop Sound
+        // --- INTERACTION: HEARTS ---
         document.addEventListener('click', (e) => {
-            playPop();
+            if(e.target.closest('button')) return;
+            
+            // Play Pop SFX
+            popSfx.currentTime = 0;
+            popSfx.play().catch(()=>{});
+
+            // Create Heart
             const heart = document.createElement('div');
             heart.innerHTML = '🤎';
-            heart.className = 'fixed pointer-events-none z-[9999] animate__animated animate__fadeOutUp';
+            heart.className = 'fixed pointer-events-none z-[9999] text-xl animate__animated animate__fadeOutUp';
             heart.style.left = (e.clientX - 10) + 'px';
             heart.style.top = (e.clientY - 10) + 'px';
             document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 800);
+            setTimeout(() => heart.remove(), 1000);
         });
 
-        // Finale: Confetti + Outro Animation
+        // --- LOADER ---
+        window.addEventListener('load', () => {
+            document.getElementById('progress').style.width = '100%';
+            setTimeout(() => {
+                document.getElementById('loader').style.transform = 'translateY(-100%)';
+            }, 1200);
+        });
+
+        // --- SCROLL OBSERVER ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.2 });
+        document.querySelectorAll('section').forEach(s => observer.observe(s));
+
+        // --- REEL NAVIGATION ---
+        let currentSlide = 0;
+        const cardWidth = 280; // 260px card + 20px gap
+        const totalCards = 16; // All 16 slide cards
+
+        function slideReel(direction) {
+            const reelContent = document.querySelector('.marquee-content');
+            reelContent.classList.remove('auto-scroll'); // Stop auto animation
+            
+            currentSlide += direction;
+            
+            // Loop around: if past last, go to first; if before first, go to last
+            if (currentSlide >= totalCards) {
+                currentSlide = 0;
+            } else if (currentSlide < 0) {
+                currentSlide = totalCards - 1;
+            }
+            
+            const offset = currentSlide * cardWidth;
+            reelContent.style.transform = `translateX(-${offset}px)`;
+            
+            // Restart auto-scroll after 5 seconds of no interaction
+            clearTimeout(window.reelTimeout);
+            window.reelTimeout = setTimeout(() => {
+                reelContent.classList.add('auto-scroll');
+                currentSlide = 0;
+                reelContent.style.transform = 'translateX(0)';
+            }, 5000);
+        }
+
+        // Initialize auto-scroll on load
+        window.addEventListener('load', () => {
+            const reelContent = document.querySelector('.marquee-content');
+            reelContent.classList.add('auto-scroll');
+        });
+
+        // --- FINALE ---
         function handleFinale() {
-            playMagic();
+            magicSfx.currentTime = 0;
+            magicSfx.play();
+            
             confetti({
-                particleCount: 200,
-                spread: 90,
-                origin: { y: 0.6 },
+                particleCount: 150,
+                spread: 100,
+                origin: { y: 0.8 },
                 colors: ['#8E9775', '#B38B6D', '#FDFBF7']
             });
 
-            // Start Outro after 3 seconds
-            setTimeout(() => {
-                document.getElementById('outro-overlay').style.opacity = '1';
-                setTimeout(() => {
-                    alert("May your year be as beautiful as you! 🎉");
-                    window.scrollTo({top: 0, behavior: 'smooth'});
-                    document.getElementById('outro-overlay').style.opacity = '0';
-                }, 2500);
-            }, 3000);
+            if(!musicPlaying) toggleMusic();
         }
     </script>
 </body>
