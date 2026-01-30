@@ -16,6 +16,7 @@
             --clay: #B38B6D; 
             --earth: #4A443F; 
             --sand: #EAE0D5; 
+            --ease-boutique: cubic-bezier(0.22, 1, 0.36, 1);
         }
         
         html, body { 
@@ -26,10 +27,9 @@
             overflow-x: hidden;
             scroll-behavior: smooth;
             -webkit-tap-highlight-color: transparent;
-            touch-action: pan-y; /* Allows vertical scroll while swiping horizontal */
+            touch-action: pan-y;
         }
 
-        /* Subtle Grain */
         body::before {
             content: "";
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -48,133 +48,142 @@
         }
 
         /* --- REEL STYLING --- */
-        .marquee-wrapper {
-            width: 100%; overflow: hidden; position: relative; padding: 30px 0;
-            cursor: grab; touch-action: pan-y;
-        }
-
-        .marquee-content { 
-            display: inline-flex; 
-            gap: 20px; 
-            will-change: transform;
-            padding: 0 20px;
-        }
+        .reel-outer-container { position: relative; width: 100%; padding: 0 10px; }
+        .marquee-wrapper { width: 100%; overflow: hidden; position: relative; padding: 30px 0; cursor: grab; }
+        .marquee-content { display: inline-flex; gap: 20px; will-change: transform; }
         
         .slide-card {
-            width: 250px; flex-shrink: 0; background: white;
-            padding: 12px 12px 35px 12px; border-radius: 2px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-            transition: transform 0.4s ease;
-            user-select: none;
+            width: 240px; flex-shrink: 0; background: white;
+            padding: 10px 10px 30px 10px; border-radius: 2px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            user-select: none; pointer-events: none;
+            /* Entrance stagger */
+            opacity: 0; transform: translateY(20px);
+            transition: all 1s var(--ease-boutique);
         }
+        section.active .slide-card { opacity: 1; transform: translateY(0); }
+        /* Delay each card slightly for a wave effect */
+        .slide-card:nth-child(1) { transition-delay: 0.1s; }
+        .slide-card:nth-child(2) { transition-delay: 0.2s; }
+        .slide-card:nth-child(3) { transition-delay: 0.3s; }
+        .slide-card:nth-child(4) { transition-delay: 0.4s; }
 
-        /* UI ELEMENTS */
+        .slide-card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 1px; }
+
+        /* --- NAV BUTTONS --- */
+        .nav-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 44px; height: 44px; background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(4px); border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            z-index: 100; border: 1px solid rgba(0,0,0,0.03); cursor: pointer;
+            transition: all 0.4s var(--ease-boutique); color: var(--earth);
+        }
+        .nav-btn:hover { background: var(--earth); color: white; }
+        .prev-btn { left: 15px; } .next-btn { right: 15px; }
+
+        /* --- UI ELEMENTS --- */
         .music-fab {
             position: fixed; bottom: 25px; right: 25px; z-index: 9000;
-            width: 50px; height: 50px;
-            background: white; border: 1px solid var(--sand);
+            width: 45px; height: 45px; background: white; border: 1px solid var(--sand);
             border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05); transition: all 0.5s var(--ease-boutique);
         }
-        .music-fab.playing { background: var(--sage); color: white; }
+        .music-fab.playing { background: var(--sage); color: white; transform: rotate(360deg); }
 
-        .reel-nav-btn {
-            width: 40px; height: 40px;
-            background: white; border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            z-index: 50; display: flex; align-items: center; justify-content: center;
-        }
-
-        /* Entrance Effects */
-        section { opacity: 0; transform: translateY(40px); transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1); }
+        /* Global Section Reveal */
+        section { opacity: 0; transform: translateY(40px); transition: all 1.4s var(--ease-boutique); }
         section.active { opacity: 1; transform: translateY(0); }
 
-        .btn-magic {
+        .btn-finale {
             background: var(--earth); color: white; 
-            padding: 1.1rem 2.5rem; border-radius: 50px;
-            font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+            padding: 1rem 3rem; border-radius: 50px;
+            font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase;
+            transition: all 0.4s var(--ease-boutique);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
+        .btn-finale:active { transform: scale(0.95); background: var(--clay); }
     </style>
 </head>
 <body>
 
-    <audio id="bg-music" src="music.mp3" loop></audio> 
-    <audio id="sfx-pop" src="click.mp3" preload="auto"></audio>
-    <audio id="sfx-magic" src="sparkle.mp3" preload="auto"></audio>
+    <audio id="bg-music" src="OIIAOIIA CAT Happy Birthday to You ｜ Spinning Cat Uia Meme.mp3" loop autoplay></audio>
+    <audio id="sfx-magic" src="Birthday Party Horn Sound Effect.mp3" preload="auto"></audio>
 
     <button onclick="toggleMusic()" id="music-btn" class="music-fab">♫</button>
 
     <div class="bg-blob w-72 h-72 bg-sand top-[-5%] left-[-5%]"></div>
     <div class="bg-blob w-80 h-80 bg-[#e8dcc8] bottom-[-5%] right-[-5%]" style="animation-delay: -5s;"></div>
 
-    <div id="loader" class="fixed inset-0 bg-[#FDFBF7] z-[9999] flex flex-col justify-center items-center">
-        <p class="text-[10px] tracking-[0.5em] text-clay animate-pulse mb-4">ARCHIVE 2026</p>
+    <div id="loader" class="fixed inset-0 bg-[#FDFBF7] z-[9999] flex flex-col justify-center items-center transition-all duration-1000">
+        <div class="overflow-hidden">
+            <p class="text-[10px] tracking-[0.8em] text-clay animate__animated animate__fadeInUp mb-4 uppercase">Archive 20.26</p>
+        </div>
         <div class="w-24 h-[1px] bg-sand overflow-hidden relative">
-            <div id="progress" class="absolute inset-0 bg-earth w-0 transition-all duration-700"></div>
+            <div id="progress" class="absolute inset-0 bg-earth w-0 transition-all duration-1000"></div>
         </div>
     </div>
 
     <main>
-        <section id="hero" class="active h-[95vh] flex flex-col justify-center px-8">
-            <div class="text-center">
-                <span class="text-5xl mb-6 block animate__animated animate__zoomIn">🦢</span>
-                <p class="text-[10px] tracking-[0.6em] opacity-40 mb-6 uppercase">Collection No. 26</p>
+        <section id="hero" class="active h-[100vh] flex flex-col justify-center px-8 text-center">
+            <div class="animate__animated animate__zoomIn animate__slow">
+                <span class="text-5xl mb-6 block">🦢</span>
+                <p class="text-[10px] tracking-[0.6em] opacity-40 mb-6 uppercase">Collection Vol. 26</p>
                 <h1 class="text-7xl font-bold text-earth leading-[0.85] tracking-tighter mb-4">
                     Glow<br>
                     <span class="text-clay italic font-serif text-6xl">Moment.</span>
                 </h1>
             </div>
-            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-center opacity-30">
-                <p class="text-[8px] tracking-[0.5em] uppercase mb-2">Slide to begin</p>
-                <div class="w-[1px] h-10 bg-earth mx-auto"></div>
+            <div class="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-20 animate__animated animate__fadeIn animate__delay-2s">
+                <div class="w-[1px] h-12 bg-earth mx-auto animate-bounce"></div>
             </div>
         </section>
 
-        <section class="py-16">
+        <section class="py-12">
             <h2 class="text-[10px] font-bold tracking-[0.4em] uppercase mb-12 opacity-30 text-center">Visual Diary</h2>
             
-            <div class="mb-14 relative group" id="container-reel1">
-                <div class="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2 pointer-events-none">
-                    <button class="reel-nav-btn prev pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">‹</button>
-                    <button class="reel-nav-btn next pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">›</button>
-                </div>
-                <div class="marquee-wrapper" id="reel1">
-                    <div class="marquee-content">
-                        <div class="slide-card"><img src="photo1.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
-                        <div class="slide-card"><img src="photo2.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
-                        <div class="slide-card"><img src="photo3.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
-                        <div class="slide-card"><img src="photo4.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
+            <div class="reel-outer-container">
+                <button class="nav-btn prev-btn" onclick="navSlide('content1', -1)">‹</button>
+                <button class="nav-btn next-btn" onclick="navSlide('content1', 1)">›</button>
+                <div class="marquee-wrapper" id="wrapper1">
+                    <div class="marquee-content" id="content1">
+                        <div class="slide-card"><img src="photo1.jpeg"></div>
+                        <div class="slide-card"><img src="photo2.jpeg"></div>
+                        <div class="slide-card"><img src="photo3.jpeg"></div>
+                        <div class="slide-card"><img src="photo4.jpeg"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="mb-14 relative group" id="container-reel2">
-                <div class="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2 pointer-events-none">
-                    <button class="reel-nav-btn prev pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">‹</button>
-                    <button class="reel-nav-btn next pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">›</button>
-                </div>
-                <div class="marquee-wrapper" id="reel2">
-                    <div class="marquee-content">
-                        <div class="slide-card"><img src="photo5.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
-                        <div class="slide-card"><img src="photo1.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
-                        <div class="slide-card"><img src="photo2.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
-                        <div class="slide-card"><img src="photo3.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
+            <div class="reel-outer-container mt-16">
+                <button class="nav-btn prev-btn" onclick="navSlide('content2', -1)">‹</button>
+                <button class="nav-btn next-btn" onclick="navSlide('content2', 1)">›</button>
+                <div class="marquee-wrapper" id="wrapper2">
+                    <div class="marquee-content" id="content2">
+                        <div class="slide-card"><img src="photo5.jpeg"></div>
+                        <div class="slide-card"><img src="photo1.jpeg"></div>
+                        <div class="slide-card"><img src="photo2.jpeg"></div>
+                        <div class="slide-card"><img src="photo3.jpeg"></div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="py-20 px-8">
-            <div class="max-w-xs mx-auto text-center">
-                <p class="font-serif italic text-3xl text-earth leading-snug animate-pulse">
+        <section class="py-32 px-10 text-center">
+            <div class="max-w-xs mx-auto overflow-hidden">
+                <p class="font-serif italic text-3xl text-earth leading-snug animate__animated animate__fadeInUp">
                     "May your year be as bright as your smile."
                 </p>
             </div>
+            <div class="w-10 h-[1px] bg-clay/30 mx-auto mt-8"></div>
         </section>
 
-        <section id="finale" class="pb-32 text-center px-8">
-            <button onclick="handleFinale()" class="btn-magic mb-12 w-full max-w-xs">
+        <section id="finale" class="py-32 text-center px-8 flex flex-col items-center">
+            <button onclick="triggerConfetti()" class="btn-finale mb-12">
                 Unlock 2026 ✨
+            </button>
+            <button onclick="window.scrollTo({top:0, behavior:'smooth'})" class="text-[9px] tracking-[0.5em] opacity-40 uppercase hover:opacity-100 transition-opacity">
+                Back to Top
             </button>
         </section>
     </main>
@@ -185,115 +194,101 @@
         let musicPlaying = false;
 
         function toggleMusic() {
-            if (musicPlaying) { bgMusic.pause(); musicBtn.innerHTML = '♫'; musicBtn.classList.remove('playing'); }
-            else { bgMusic.play().catch(() => {}); musicBtn.innerHTML = '❚❚'; musicBtn.classList.add('playing'); }
+            if (musicPlaying) { 
+                bgMusic.pause(); musicBtn.innerHTML = '♫'; musicBtn.classList.remove('playing'); 
+            } else { 
+                bgMusic.play().catch(() => {}); musicBtn.innerHTML = '❚❚'; musicBtn.classList.add('playing'); 
+            }
             musicPlaying = !musicPlaying;
         }
 
-        // --- ENHANCED INDEPENDENT REEL LOGIC ---
-        function initReel(id) {
-            const container = document.getElementById(`container-${id}`);
-            const wrapper = document.getElementById(id);
-            const content = wrapper.querySelector('.marquee-content');
-            const prevBtn = container.querySelector('.prev');
-            const nextBtn = container.querySelector('.next');
+        const sliderStates = {};
+
+        function initSlider(contentId, speed = 0.5) {
+            const content = document.getElementById(contentId);
+            const wrapper = content.parentElement;
+            const items = [...content.children];
             
-            const originalItems = [...content.children];
-            const cardWidth = 270; // width + gap
-            
-            // Triple the content for smooth infinite looping
-            originalItems.forEach(item => content.appendChild(item.cloneNode(true)));
-            originalItems.forEach(item => content.appendChild(item.cloneNode(true)));
+            items.forEach(item => content.appendChild(item.cloneNode(true)));
+            items.forEach(item => content.appendChild(item.cloneNode(true)));
 
-            let currentX = -cardWidth * originalItems.length;
-            let isDragging = false;
-            let startPos = 0;
-            let prevTranslate = currentX;
-
-            content.style.transform = `translateX(${currentX}px)`;
-
-            const updatePosition = () => {
-                const limit = cardWidth * originalItems.length;
-                if (currentX > 0) currentX = -limit;
-                if (currentX < -(limit * 2)) currentX = -limit;
-                content.style.transform = `translateX(${currentX}px)`;
+            sliderStates[contentId] = {
+                x: 0, isDragging: false, startX: 0, autoScroll: true,
+                totalWidth: (240 + 20) * items.length
             };
 
-            // Touch / Mouse Events
-            const start = (e) => {
-                isDragging = true;
-                startPos = (e.pageX || e.touches[0].pageX);
-                content.style.transition = 'none';
+            const state = sliderStates[contentId];
+            const update = () => {
+                if (!state.isDragging && state.autoScroll) state.x -= speed;
+                if (Math.abs(state.x) >= state.totalWidth) state.x = 0;
+                if (state.x > 0) state.x = -state.totalWidth;
+                content.style.transform = `translateX(${state.x}px)`;
+                requestAnimationFrame(update);
             };
 
-            const move = (e) => {
-                if (!isDragging) return;
-                const x = (e.pageX || e.touches[0].pageX);
-                const diff = x - startPos;
-                currentX = prevTranslate + diff;
-                updatePosition();
-            };
+            wrapper.addEventListener('touchstart', (e) => {
+                state.isDragging = true;
+                state.autoScroll = false;
+                state.startX = e.touches[0].pageX - state.x;
+                content.style.transition = "none";
+            }, {passive: true});
 
-            const end = () => {
-                isDragging = false;
-                prevTranslate = currentX;
-                content.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-            };
+            wrapper.addEventListener('touchmove', (e) => {
+                if (!state.isDragging) return;
+                state.x = e.touches[0].pageX - state.startX;
+            }, {passive: true});
 
-            wrapper.addEventListener('mousedown', start);
-            wrapper.addEventListener('touchstart', start);
-            window.addEventListener('mousemove', move);
-            wrapper.addEventListener('touchmove', move);
-            window.addEventListener('mouseup', end);
-            window.addEventListener('touchend', end);
-
-            // Button Functionality
-            nextBtn.addEventListener('click', () => {
-                content.style.transition = 'transform 0.4s ease';
-                currentX -= cardWidth;
-                updatePosition();
-                prevTranslate = currentX;
+            wrapper.addEventListener('touchend', () => {
+                state.isDragging = false;
+                setTimeout(() => { if(!state.isDragging) state.autoScroll = true; }, 2000);
             });
 
-            prevBtn.addEventListener('click', () => {
-                content.style.transition = 'transform 0.4s ease';
-                currentX += cardWidth;
-                updatePosition();
-                prevTranslate = currentX;
-            });
+            update();
         }
 
-        // Init both
-        initReel('reel1');
-        initReel('reel2');
+        window.navSlide = (id, direction) => {
+            const state = sliderStates[id];
+            const content = document.getElementById(id);
+            state.autoScroll = false;
+            content.style.transition = "transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)";
+            state.x -= (direction * 260); 
+            content.style.transform = `translateX(${state.x}px)`;
+            setTimeout(() => {
+                content.style.transition = "none";
+                state.autoScroll = true;
+            }, 1200);
+        };
 
-        // Entry Observer
+        initSlider('content1', 0.5);
+        initSlider('content2', 0.3);
+
+        window.addEventListener('load', () => {
+            document.getElementById('progress').style.width = '100%';
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.style.opacity = '0';
+                loader.style.transform = 'scale(1.05)';
+                setTimeout(() => loader.remove(), 1000);
+            }, 1200);
+        });
+
         const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                }
+            entries.forEach(entry => { 
+                if (entry.isIntersecting) entry.target.classList.add('active'); 
             });
         }, { threshold: 0.1 });
         document.querySelectorAll('section').forEach(s => observer.observe(s));
 
-        // Loader
-        window.addEventListener('load', () => {
-            document.getElementById('progress').style.width = '100%';
-            setTimeout(() => {
-                document.getElementById('loader').style.opacity = '0';
-                setTimeout(() => document.getElementById('loader').remove(), 800);
-            }, 1000);
-        });
-
-        function handleFinale() {
+        function triggerConfetti() {
             document.getElementById('sfx-magic').play();
-            confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#8E9775', '#B38B6D']
-            });
+            const end = Date.now() + 2 * 1000;
+            const colors = ['#8E9775', '#B38B6D', '#FDFBF7'];
+
+            (function frame() {
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: colors });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: colors });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
             if(!musicPlaying) toggleMusic();
         }
     </script>
