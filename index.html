@@ -7,10 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:italic,wght@600&family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:italic,wght@300;600&family=Quicksand:wght@300;400;500;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --cream: #FDFBF7; --sage: #8E9775; --clay: #B38B6D; --earth: #4A443F; --sand: #EAE0D5; }
+        :root { 
+            --cream: #FDFBF7; 
+            --sage: #8E9775; 
+            --clay: #B38B6D; 
+            --earth: #4A443F; 
+            --sand: #EAE0D5; 
+        }
         
         html, body { 
             font-family: 'Quicksand', sans-serif; 
@@ -18,106 +24,75 @@
             color: var(--earth); 
             margin: 0; padding: 0;
             overflow-x: hidden;
+            scroll-behavior: smooth;
             -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+            touch-action: pan-y; /* Allows vertical scroll while swiping horizontal */
         }
 
-        /* --- INFINITE REEL LOOP --- */
+        /* Subtle Grain */
+        body::before {
+            content: "";
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://grainy-gradients.vercel.app/noise.svg');
+            opacity: 0.04; pointer-events: none; z-index: 9999;
+        }
+
+        .bg-blob {
+            position: fixed; border-radius: 50%; filter: blur(80px); 
+            z-index: -1; opacity: 0.4; pointer-events: none;
+            animation: float 20s infinite alternate ease-in-out;
+        }
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, -40px) scale(1.1); }
+        }
+
+        /* --- REEL STYLING --- */
         .marquee-wrapper {
-            width: 100%;
-            overflow-x: auto;
-            overflow-y: hidden;
-            white-space: nowrap;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            position: relative;
-            padding: 20px 0;
-        }
-        .marquee-wrapper::-webkit-scrollbar { display: none; }
-
-        .marquee-content {
-            display: inline-flex;
-            gap: 20px;
-            transition: transform 0.5s ease;
+            width: 100%; overflow: hidden; position: relative; padding: 30px 0;
+            cursor: grab; touch-action: pan-y;
         }
 
-        .marquee-content.auto-scroll {
-            animation: scroll-loop 50s linear infinite;
-        }
-
-        /* Pause animation on touch/scroll */
-        .marquee-wrapper:active .marquee-content {
-            animation-play-state: paused;
-        }
-
-        @keyframes scroll-loop {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-5680px); }
+        .marquee-content { 
+            display: inline-flex; 
+            gap: 20px; 
+            will-change: transform;
+            padding: 0 20px;
         }
         
         .slide-card {
-            width: 260px;
-            flex-shrink: 0;
-            background: white;
-            padding: 10px 10px 35px 10px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            white-space: normal;
+            width: 250px; flex-shrink: 0; background: white;
+            padding: 12px 12px 35px 12px; border-radius: 2px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            transition: transform 0.4s ease;
+            user-select: none;
         }
 
-        /* --- MUSIC BUTTON --- */
+        /* UI ELEMENTS */
         .music-fab {
             position: fixed; bottom: 25px; right: 25px; z-index: 9000;
-            width: 55px; height: 55px;
-            background: var(--earth); color: white;
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 50px; height: 50px;
+            background: white; border: 1px solid var(--sand);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
         }
-        .music-fab.playing { background: var(--sage); scale: 1.1; }
+        .music-fab.playing { background: var(--sage); color: white; }
 
-        /* --- BACKGROUND VIBE --- */
-        .bg-blob {
-            position: fixed; border-radius: 50%; filter: blur(60px); 
-            z-index: -1; opacity: 0.4; pointer-events: none;
+        .reel-nav-btn {
+            width: 40px; height: 40px;
+            background: white; border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 50; display: flex; align-items: center; justify-content: center;
         }
 
-        /* --- SECTIONS --- */
-        section { 
-            min-height: 100vh; width: 100%; 
-            display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; 
-            padding: 1.5rem; opacity: 0; transform: translateY(30px); 
-            transition: all 1s ease; 
-        }
+        /* Entrance Effects */
+        section { opacity: 0; transform: translateY(40px); transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1); }
         section.active { opacity: 1; transform: translateY(0); }
 
         .btn-magic {
             background: var(--earth); color: white; 
-            padding: 1rem 2.5rem; border-radius: 50px;
-            font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
-            box-shadow: 0 10px 20px rgba(74, 68, 63, 0.2);
-        }
-
-        /* --- REEL NAVIGATION BUTTONS --- */
-        .reel-nav-btn {
-            position: absolute; top: 50%; transform: translateY(-50%);
-            width: 45px; height: 45px;
-            background: rgba(74, 68, 63, 0.8); color: white;
-            border: none; border-radius: 50%; cursor: pointer;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 20px; transition: all 0.3s ease; z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-        .reel-nav-btn:hover { background: rgba(74, 68, 63, 0.95); scale: 1.1; }
-        .reel-nav-btn:active { scale: 0.95; }
-        .reel-nav-btn.prev { left: 10px; }
-        .reel-nav-btn.next { right: 10px; }
-
-        .reel-container {
-            position: relative;
-            width: 100%;
+            padding: 1.1rem 2.5rem; border-radius: 50px;
+            font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
         }
     </style>
 </head>
@@ -129,180 +104,196 @@
 
     <button onclick="toggleMusic()" id="music-btn" class="music-fab">♫</button>
 
-    <div class="bg-blob w-64 h-64 bg-sand -top-10 -left-10"></div>
-    <div class="bg-blob w-80 h-80 bg-[#e8dcc8] -bottom-20 -right-20"></div>
+    <div class="bg-blob w-72 h-72 bg-sand top-[-5%] left-[-5%]"></div>
+    <div class="bg-blob w-80 h-80 bg-[#e8dcc8] bottom-[-5%] right-[-5%]" style="animation-delay: -5s;"></div>
 
-    <div id="loader" class="fixed inset-0 bg-[--cream] z-[9999] flex flex-col justify-center items-center transition-transform duration-700">
-        <p class="text-[10px] tracking-[0.5em] text-clay animate-pulse">CREATING MAGIC</p>
-        <div class="w-24 h-[1px] bg-sand mt-4 overflow-hidden"><div id="progress" class="h-full bg-earth w-0 transition-all duration-1000"></div></div>
+    <div id="loader" class="fixed inset-0 bg-[#FDFBF7] z-[9999] flex flex-col justify-center items-center">
+        <p class="text-[10px] tracking-[0.5em] text-clay animate-pulse mb-4">ARCHIVE 2026</p>
+        <div class="w-24 h-[1px] bg-sand overflow-hidden relative">
+            <div id="progress" class="absolute inset-0 bg-earth w-0 transition-all duration-700"></div>
+        </div>
     </div>
 
     <main>
-        <section id="hero" class="active">
-            <div class="text-center z-10">
-                <span class="text-4xl mb-6 block animate-bounce">🦢</span>
-                <p class="text-[9px] tracking-[0.4em] opacity-50 mb-2 uppercase">Volume 20.26</p>
-                <h1 class="text-6xl font-bold text-earth leading-[0.85]">Glow<br><span class="text-clay italic font-serif text-5xl">Moment.</span></h1>
+        <section id="hero" class="active h-[95vh] flex flex-col justify-center px-8">
+            <div class="text-center">
+                <span class="text-5xl mb-6 block animate__animated animate__zoomIn">🦢</span>
+                <p class="text-[10px] tracking-[0.6em] opacity-40 mb-6 uppercase">Collection No. 26</p>
+                <h1 class="text-7xl font-bold text-earth leading-[0.85] tracking-tighter mb-4">
+                    Glow<br>
+                    <span class="text-clay italic font-serif text-6xl">Moment.</span>
+                </h1>
             </div>
-            <div class="absolute bottom-10 opacity-30 text-[9px] tracking-[0.4em] uppercase">Scroll to Reel</div>
+            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-center opacity-30">
+                <p class="text-[8px] tracking-[0.5em] uppercase mb-2">Slide to begin</p>
+                <div class="w-[1px] h-10 bg-earth mx-auto"></div>
+            </div>
         </section>
 
-        <section id="reel-section">
-            <h2 class="text-[10px] font-bold tracking-[0.3em] uppercase mb-8 opacity-60">Visual Diary</h2>
+        <section class="py-16">
+            <h2 class="text-[10px] font-bold tracking-[0.4em] uppercase mb-12 opacity-30 text-center">Visual Diary</h2>
             
-            <div class="reel-container">
-                <button class="reel-nav-btn prev" onclick="slideReel(-1)">‹</button>
-                <div class="marquee-wrapper" id="reel">
-                <div class="marquee-content">
-                    <div class="slide-card"><img src="photo5.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Glow</p></div>
-                    <div class="slide-card"><img src="photo4.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Cat Mom 🐾</p></div>
-                    <div class="slide-card"><img src="photo1.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Travels</p></div>
-                    <div class="slide-card"><img src="photo2.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Story</p></div>
-                    <div class="slide-card"><img src="photo5.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Glow</p></div>
-                    <div class="slide-card"><img src="photo4.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Cat Mom 🐾</p></div>
-                    <div class="slide-card"><img src="photo1.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Travels</p></div>
-                    <div class="slide-card"><img src="photo2.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Story</p></div>
-                    <div class="slide-card"><img src="photo5.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Glow</p></div>
-                    <div class="slide-card"><img src="photo4.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Cat Mom 🐾</p></div>
-                    <div class="slide-card"><img src="photo1.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Travels</p></div>
-                    <div class="slide-card"><img src="photo2.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Story</p></div>
-                    <div class="slide-card"><img src="photo5.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Glow</p></div>
-                    <div class="slide-card"><img src="photo4.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Cat Mom 🐾</p></div>
-                    <div class="slide-card"><img src="photo1.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Travels</p></div>
-                    <div class="slide-card"><img src="photo2.jpeg" class="w-full aspect-[4/5] object-cover rounded-lg mb-3"><p class="text-center font-serif italic text-sm">Story</p></div>
+            <div class="mb-14 relative group" id="container-reel1">
+                <div class="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2 pointer-events-none">
+                    <button class="reel-nav-btn prev pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">‹</button>
+                    <button class="reel-nav-btn next pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">›</button>
                 </div>
+                <div class="marquee-wrapper" id="reel1">
+                    <div class="marquee-content">
+                        <div class="slide-card"><img src="photo1.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
+                        <div class="slide-card"><img src="photo2.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
+                        <div class="slide-card"><img src="photo3.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
+                        <div class="slide-card"><img src="photo4.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
+                    </div>
                 </div>
-                <button class="reel-nav-btn next" onclick="slideReel(1)">›</button>
             </div>
-            
-            <p class="text-[9px] mt-6 opacity-40 italic tracking-widest">Swipe or Touch to Explore</p>
+
+            <div class="mb-14 relative group" id="container-reel2">
+                <div class="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2 pointer-events-none">
+                    <button class="reel-nav-btn prev pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">‹</button>
+                    <button class="reel-nav-btn next pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">›</button>
+                </div>
+                <div class="marquee-wrapper" id="reel2">
+                    <div class="marquee-content">
+                        <div class="slide-card"><img src="photo5.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
+                        <div class="slide-card"><img src="photo1.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
+                        <div class="slide-card"><img src="photo2.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
+                        <div class="slide-card"><img src="photo3.jpeg" class="w-full aspect-[4/5] object-cover mb-4"></div>
+                    </div>
+                </div>
+            </div>
         </section>
 
-        <section>
-            <div class="w-[85%] max-w-xs p-10 bg-white/50 backdrop-blur-md rounded-[40px] border border-white/60 shadow-xl text-center transform rotate-1">
-                <p class="font-serif italic text-2xl text-earth leading-relaxed mb-6">
+        <section class="py-20 px-8">
+            <div class="max-w-xs mx-auto text-center">
+                <p class="font-serif italic text-3xl text-earth leading-snug animate-pulse">
                     "May your year be as bright as your smile."
                 </p>
-                <div class="w-8 h-[1px] bg-clay mx-auto"></div>
             </div>
         </section>
 
-        <section id="finale">
-            <div class="text-center">
-                <button onclick="handleFinale()" class="btn-magic mb-8 active:scale-95 transition-all">
-                    Unlock 2026 ✨
-                </button>
-                
-                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="block mx-auto text-[10px] uppercase tracking-[0.3em] text-sage">
-                    ↑ Restart
-                </button>
-            </div>
+        <section id="finale" class="pb-32 text-center px-8">
+            <button onclick="handleFinale()" class="btn-magic mb-12 w-full max-w-xs">
+                Unlock 2026 ✨
+            </button>
         </section>
     </main>
 
     <script>
-        // --- AUDIO ENGINE ---
         const bgMusic = document.getElementById('bg-music');
-        const popSfx = document.getElementById('sfx-pop');
-        const magicSfx = document.getElementById('sfx-magic');
         const musicBtn = document.getElementById('music-btn');
         let musicPlaying = false;
 
         function toggleMusic() {
-            if (musicPlaying) {
-                bgMusic.pause();
-                musicBtn.innerHTML = '♫';
-                musicBtn.classList.remove('playing');
-            } else {
-                bgMusic.play().catch(() => alert("Tap anywhere first to enable sound!"));
-                musicBtn.innerHTML = '❚❚';
-                musicBtn.classList.add('playing');
-            }
+            if (musicPlaying) { bgMusic.pause(); musicBtn.innerHTML = '♫'; musicBtn.classList.remove('playing'); }
+            else { bgMusic.play().catch(() => {}); musicBtn.innerHTML = '❚❚'; musicBtn.classList.add('playing'); }
             musicPlaying = !musicPlaying;
         }
 
-        // --- INTERACTION: HEARTS ---
-        document.addEventListener('click', (e) => {
-            if(e.target.closest('button')) return;
+        // --- ENHANCED INDEPENDENT REEL LOGIC ---
+        function initReel(id) {
+            const container = document.getElementById(`container-${id}`);
+            const wrapper = document.getElementById(id);
+            const content = wrapper.querySelector('.marquee-content');
+            const prevBtn = container.querySelector('.prev');
+            const nextBtn = container.querySelector('.next');
             
-            // Play Pop SFX
-            popSfx.currentTime = 0;
-            popSfx.play().catch(()=>{});
+            const originalItems = [...content.children];
+            const cardWidth = 270; // width + gap
+            
+            // Triple the content for smooth infinite looping
+            originalItems.forEach(item => content.appendChild(item.cloneNode(true)));
+            originalItems.forEach(item => content.appendChild(item.cloneNode(true)));
 
-            // Create Heart
-            const heart = document.createElement('div');
-            heart.innerHTML = '🤎';
-            heart.className = 'fixed pointer-events-none z-[9999] text-xl animate__animated animate__fadeOutUp';
-            heart.style.left = (e.clientX - 10) + 'px';
-            heart.style.top = (e.clientY - 10) + 'px';
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 1000);
-        });
+            let currentX = -cardWidth * originalItems.length;
+            let isDragging = false;
+            let startPos = 0;
+            let prevTranslate = currentX;
 
-        // --- LOADER ---
+            content.style.transform = `translateX(${currentX}px)`;
+
+            const updatePosition = () => {
+                const limit = cardWidth * originalItems.length;
+                if (currentX > 0) currentX = -limit;
+                if (currentX < -(limit * 2)) currentX = -limit;
+                content.style.transform = `translateX(${currentX}px)`;
+            };
+
+            // Touch / Mouse Events
+            const start = (e) => {
+                isDragging = true;
+                startPos = (e.pageX || e.touches[0].pageX);
+                content.style.transition = 'none';
+            };
+
+            const move = (e) => {
+                if (!isDragging) return;
+                const x = (e.pageX || e.touches[0].pageX);
+                const diff = x - startPos;
+                currentX = prevTranslate + diff;
+                updatePosition();
+            };
+
+            const end = () => {
+                isDragging = false;
+                prevTranslate = currentX;
+                content.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            };
+
+            wrapper.addEventListener('mousedown', start);
+            wrapper.addEventListener('touchstart', start);
+            window.addEventListener('mousemove', move);
+            wrapper.addEventListener('touchmove', move);
+            window.addEventListener('mouseup', end);
+            window.addEventListener('touchend', end);
+
+            // Button Functionality
+            nextBtn.addEventListener('click', () => {
+                content.style.transition = 'transform 0.4s ease';
+                currentX -= cardWidth;
+                updatePosition();
+                prevTranslate = currentX;
+            });
+
+            prevBtn.addEventListener('click', () => {
+                content.style.transition = 'transform 0.4s ease';
+                currentX += cardWidth;
+                updatePosition();
+                prevTranslate = currentX;
+            });
+        }
+
+        // Init both
+        initReel('reel1');
+        initReel('reel2');
+
+        // Entry Observer
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('section').forEach(s => observer.observe(s));
+
+        // Loader
         window.addEventListener('load', () => {
             document.getElementById('progress').style.width = '100%';
             setTimeout(() => {
-                document.getElementById('loader').style.transform = 'translateY(-100%)';
-            }, 1200);
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => document.getElementById('loader').remove(), 800);
+            }, 1000);
         });
 
-        // --- SCROLL OBSERVER ---
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) entry.target.classList.add('active');
-            });
-        }, { threshold: 0.2 });
-        document.querySelectorAll('section').forEach(s => observer.observe(s));
-
-        // --- REEL NAVIGATION ---
-        let currentSlide = 0;
-        const cardWidth = 280; // 260px card + 20px gap
-        const totalCards = 16; // All 16 slide cards
-
-        function slideReel(direction) {
-            const reelContent = document.querySelector('.marquee-content');
-            reelContent.classList.remove('auto-scroll'); // Stop auto animation
-            
-            currentSlide += direction;
-            
-            // Loop around: if past last, go to first; if before first, go to last
-            if (currentSlide >= totalCards) {
-                currentSlide = 0;
-            } else if (currentSlide < 0) {
-                currentSlide = totalCards - 1;
-            }
-            
-            const offset = currentSlide * cardWidth;
-            reelContent.style.transform = `translateX(-${offset}px)`;
-            
-            // Restart auto-scroll after 5 seconds of no interaction
-            clearTimeout(window.reelTimeout);
-            window.reelTimeout = setTimeout(() => {
-                reelContent.classList.add('auto-scroll');
-                currentSlide = 0;
-                reelContent.style.transform = 'translateX(0)';
-            }, 5000);
-        }
-
-        // Initialize auto-scroll on load
-        window.addEventListener('load', () => {
-            const reelContent = document.querySelector('.marquee-content');
-            reelContent.classList.add('auto-scroll');
-        });
-
-        // --- FINALE ---
         function handleFinale() {
-            magicSfx.currentTime = 0;
-            magicSfx.play();
-            
+            document.getElementById('sfx-magic').play();
             confetti({
-                particleCount: 150,
-                spread: 100,
-                origin: { y: 0.8 },
-                colors: ['#8E9775', '#B38B6D', '#FDFBF7']
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#8E9775', '#B38B6D']
             });
-
             if(!musicPlaying) toggleMusic();
         }
     </script>
